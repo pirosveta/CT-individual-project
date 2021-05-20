@@ -1,5 +1,5 @@
 public with sharing class ContactHandler {
-    private String EDIT_ACCESS_LEVEL = 'Edit', DELIMITER = ': ',
+    private String EDIT_ACCESS_LEVEL = 'Edit', DELIMITER = ': ', OWNER_ROW_CAUSE = 'Owner',
         IS_INSERT = 'isInsert', IS_UPDATE = 'idUpdate', IS_DELETE = 'isDelete',
         FOLLOWING_ERROR = 'The following error has occurred.',
         AFFECTED_FIELDS = 'Contact fields that affected this error: ';
@@ -52,7 +52,7 @@ public with sharing class ContactHandler {
             cnts.add(rfr.Contact__c);
         }
         List<AccountShare> accShares = [SELECT AccountId, UserOrGroupId FROM AccountShare 
-                                        WHERE AccountId IN :accs];
+                                        WHERE AccountId IN :accs AND RowCause!=:OWNER_ROW_CAUSE];
         if (operation == IS_INSERT) {
             for (Reference__c rfr : rfrs) {
                 for (AccountShare accShare : accShares) {
@@ -73,6 +73,7 @@ public with sharing class ContactHandler {
             delShares = [SELECT Id FROM ContactShare 
                         WHERE ContactId IN :cnts AND UserOrGroupId IN :users];
         }
+        System.debug(newShares.size());
         Database.insert(newShares);
         Database.delete(delShares);
     }
