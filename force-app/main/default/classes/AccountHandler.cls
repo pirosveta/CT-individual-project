@@ -45,6 +45,7 @@ public with sharing class AccountHandler {
         TerritoryHandler territoryHandler = new TerritoryHandler();
         List<AccountShare> newShares = new List<AccountShare>();
         List<Id> delAccs = new List<Id>();
+        List<Id> delUsers = new List<Id>();
         Map<Id, Territory__c> exTerrs = new Map<Id, Territory__c>();
         List<TerritoryUser__c> terrUsers = [SELECT User__c, Territory__c FROM TerritoryUser__c]; 
 
@@ -57,9 +58,10 @@ public with sharing class AccountHandler {
                 if (operation == IS_UPDATE) {
                     Account oldAcc = oldAccs.get(acc.Id);
                     if (terrUser.Territory__c == oldAcc.Territory__c
-                    || (acc.Territory__c != null
+                    || (oldAcc.Territory__c != null
                         && territoryHandler.checkBelonging(exTerrs.get(terrUser.Territory__c), exTerrs.get(oldAcc.Territory__c)))) {
                         delAccs.add(oldAcc.Id);
+                        delUsers.add(terrUser.User__c);
                     }
                 }
                 if (terrUser.Territory__c == acc.Territory__c
@@ -77,12 +79,14 @@ public with sharing class AccountHandler {
                     }
                     else if (operation == IS_DELETE) {
                         delAccs.add(acc.Id);
+                        delUsers.add(terrUser.User__c);
                     }
                 }
             }
         }
         Database.insert(newShares, false);
-        List<AccountShare> delShares = [SELECT Id FROM AccountShare WHERE AccountId IN :delAccs];
+        List<AccountShare> delShares = [SELECT Id FROM AccountShare 
+                                        WHERE AccountId IN :delAccs AND UserOrGroupId IN :delUsers];
         Database.delete(delShares);
     }
 

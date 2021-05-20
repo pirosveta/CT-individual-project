@@ -1,4 +1,4 @@
-trigger AccountTrigger on Account (before insert, before update, before delete) {
+trigger AccountTrigger on Account (after insert, before update, before delete) {
     private String IS_INSERT = 'isInsert', IS_UPDATE = 'isUpdate', IS_DELETE = 'isDelete';
 
     AccountHandler handler = new AccountHandler();
